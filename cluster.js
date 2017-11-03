@@ -1,21 +1,10 @@
 
-const fs = require('fs');
 const cluster = require('cluster');
 const http = require('http');
 const numCPUs = require('os').cpus().length;
+const url = require('url');
+var fs = require('fs');
 
-function handler (req, res) {
-  fs.readFile(__dirname + '/index.html',
-  function (err, data) {
-    if (err) {
-      res.writeHead(500);
-      return res.end('Error loading index.html');
-    }
-
-    res.writeHead(200);
-    res.end(data);
-  });
-}
 
 if (cluster.isMaster) {
   console.log(`Master ${process.pid} is running`);
@@ -31,17 +20,32 @@ if (cluster.isMaster) {
 } else {
   // Workers can share any TCP connection
   // In this case it is an HTTP server
-  app = http.createServer(handler);
+  var app = http.createServer(function(req, res) {
+    var url_parts = url.parse(req.url)
+    // switch(url_parts.pathname) {
+    //   case '/':
+    //     console.log('start chat room');
+    //     res.end("Hello world");
+    //     break;
+    // }
+    console.log(url_parts.pathname);
+  });
   app.listen(8000);
 
   var io = require('socket.io')(app);
 
   io.on('connection', function (socket) {
-    socket.emit('news', { hello: `${process.pid}` });
-    socket.on('my other event', function (data) {
+    
+    socket.on('post status', function (data) {
       console.log(data);
+      // saveData(data);
+      socket.emit('broadcast', {"status": data});
     });
   });
 
   console.log(`Worker ${process.pid} started`);
+}
+
+function saveData(data) {
+  console.log("Save data to db");
 }

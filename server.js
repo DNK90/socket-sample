@@ -1,4 +1,3 @@
-
 var cluster = require('cluster');
 var MongoClient = require('mongodb').MongoClient
 var numCPUs = require('os').cpus().length;
@@ -28,18 +27,8 @@ MongoClient.connect(url, function(err, db) {
   if (cluster.isMaster) {
     console.log(`Master ${process.pid} is running`);
 
-    var app = require('http').createServer();
-    var io = require('socket.io').listen(app);
-    var redis = require('socket.io-redis');
-
-    io.adapter(redis({host: 'localhost', port: 6379}));
-
-    setInterval(function() {
-      io.emit('data', 'payload')
-    }, 1000);
-
     // Fork workers.
-    for (var i = 0; i < numCPUs; i++) {
+    for (var i = 0; i < 2; i++) {
       cluster.fork();
     }
 
@@ -59,8 +48,6 @@ MongoClient.connect(url, function(err, db) {
     io.adapter(redis({host: 'localhost', port: 6379}));
 
     io.on('connection', function (socket) {
-
-      socket.emit('data', `connected to worker: ${cluster.worker.id}`);
 
       socket.on('get status', function(data) {
         getStatuses(db, function(docs) {

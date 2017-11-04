@@ -4,12 +4,26 @@
   integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
   crossorigin="anonymous"></script>
 <script>
-	var socket = io();
-	debug = [];
+	var socket = io({
+		transports: ['websocket']
+	});
+
+	socket.on('reconnect_attempt', () => {
+		socket.io.opts.transports = ['polling', 'websocket'];
+	});
 
 	socket.on('broadcast', function(data) {
 		$("#content").prepend("<h3>" + data.status + "-" + data.time + "</h3>")
 	});
+
+	socket.on('connect', function() {
+		socket.on('statuses', function(docs) {
+			debug = docs;
+			for (var i=0; i < docs.length; i++) {
+				$("#content").append("<h3>" + docs[i].status + "-" + docs[i].time + "</h3>");
+			}
+		});
+	})
 
 	function sendStatus() {
 		status = $("#status").val();
@@ -18,12 +32,6 @@
 
 	$(document).ready(function() {
 		socket.emit('get status', '');
-		socket.on('statuses', function(docs) {
-			debug = docs;
-			for (var i=0; i < docs.length; i++) {
-				$("#content").append("<h3>" + docs[i].status + "-" + docs[i].time + "</h3>");
-			}
-		});
 	});
 
 	$(document).on("click", "#btn", function() {

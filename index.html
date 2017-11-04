@@ -4,16 +4,27 @@
   integrity="sha256-DZAnKJ/6XZ9si04Hgrsxu/8s717jcIzLy3oi35EouyE="
   crossorigin="anonymous"></script>
 <script>
-	var socket = io('http://localhost:8000');
+	var socket = io();
+	debug = [];
 
 	socket.on('broadcast', function(data) {
-		console.log(data);
+		$("#content").prepend("<h3>" + data.status + "-" + data.time + "</h3>")
 	});
 
 	function sendStatus() {
 		status = $("#status").val();
 		socket.emit('post status', status);
 	}
+
+	$(document).ready(function() {
+		socket.emit('get status', '');
+		socket.on('statuses', function(docs) {
+			debug = docs;
+			for (var i=0; i < docs.length; i++) {
+				$("#content").append("<h3>" + docs[i].status + "-" + docs[i].time + "</h3>");
+			}
+		});
+	});
 
 	$(document).on("click", "#btn", function() {
 		sendStatus();
@@ -22,3 +33,4 @@
 </script>
 
 <input type="text" id="status"><input type="button" id="btn" value="Send">
+<div id="content"></div>

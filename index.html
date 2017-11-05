@@ -13,14 +13,14 @@
 	});
 
 	socket.on('broadcast', function(data) {
-		$("#content").prepend("<h3>" + data.status + "-" + new Date(data.time) + "</h3>")
+		$("#content").prepend("<p>" + data.status + "-" + new Date(data.time) + "</p>")
 	});
 
 	socket.on('connect', function() {
 		socket.on('statuses', function(docs) {
 			debug = docs;
 			for (var i=0; i < docs.length; i++) {
-				$("#content").append("<h3>" + docs[i].status + "-" + new Date(docs[i].time) + "</h3>");
+				$("#content").append("<p>" + docs[i].status + "-" + new Date(docs[i].time) + "</p>");
 			}
 		});
 	})

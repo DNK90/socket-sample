@@ -1,9 +1,9 @@
 "# socket sample"
 
-1/ Run with Docker
+1/ Run with Docker<br />
   1.1/ Requirements:
   - docker
-  - docker-compose
+  - docker-compose<br />
   1.2/ Steps:
   From command line:
   - docker-compose build

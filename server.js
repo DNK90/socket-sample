@@ -3,7 +3,15 @@ var MongoClient = require('mongodb').MongoClient
 var numCPUs = require('os').cpus().length;
 var fs = require('fs');
 var assert = require('assert');
-var url = 'mongodb://localhost:27017/myproject';
+
+PORT = 8000;
+MONGO_HOST = 'mongo'; 
+MONGO_PORT = 27017;
+REDIS_HOST = 'redis';
+REDIS_PORT = 6379;
+
+TABLE = 'status';
+var url = `mongodb://${MONGO_HOST}:${MONGO_PORT}/myproject`;
 
 
 function handler (req, res) {
@@ -45,7 +53,7 @@ MongoClient.connect(url, function(err, db) {
     var io = require('socket.io').listen(server);
     var redis = require('socket.io-redis');
 
-    io.adapter(redis({host: 'localhost', port: 6379}));
+    io.adapter(redis({host: REDIS_HOST, port: REDIS_PORT}));
 
     io.on('connection', function (socket) {
 
@@ -66,14 +74,14 @@ MongoClient.connect(url, function(err, db) {
       });
     });
 
-    server.listen(8000);
+    server.listen(PORT);
     console.log(`Worker ${process.pid} started`);
   }
 });
 
 var insertStatus = function(db, data, callback) {
   // Get the documents collection
-  var collection = db.collection('status');
+  var collection = db.collection(TABLE);
   var now = new Date().getTime();
   // Insert some documents
   collection.insertOne(
@@ -86,7 +94,7 @@ var insertStatus = function(db, data, callback) {
 }
 
 var getStatuses = function(db, callback) {
-  var collection = db.collection('status');
+  var collection = db.collection(TABLE);
   collection.find({}).sort({time: -1}).toArray(function(err, docs) {
     assert.equal(err, null);
     console.log("Found the following records");
